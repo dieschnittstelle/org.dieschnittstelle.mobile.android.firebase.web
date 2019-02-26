@@ -1,0 +1,31 @@
+.table {
+    display: table;
+    clear: both;
+}
+
+.th {
+    display: table-header-group;
+}
+
+.tr {
+    display: table-row;
+}
+
+.tr span, .tr button, .th span {
+    display: table-cell;
+    padding: 5px;
+    border: solid 1px black;
+}
+
+.th span {
+    font-weight: bold;
+}
+
+.tr span button {
+    padding: 0px;
+    font-weight: normal;
+}
+
+.template {
+    display: none;
+}

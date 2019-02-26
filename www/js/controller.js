@@ -1,17 +1,30 @@
 class ViewController {
 
     constructor() {
+        this.userTemplate = null;
         this.user = {};
+        var lastUseremail = localStorage.getItem("lastUseremail");
+        if (lastUseremail) {
+            this.user.email = lastUseremail;
+        }
         this.event = null;
         this.status = "loggedout"
-        this.userTemplate = null;
+
+        this.todolistTemplate = null;
+        this.todos = [];
+        this.newtodo = {};
+
+        this.crudops = new TodoCRUDOperations();
     }
 
     oncreate() {
         console.log("oncreate()");
+
+        // bind the login view
         var userView = document.getElementById("userView");
         var userTemplateStr = userView.outerHTML;
         var userParent = userView.parentNode;
+        userParent.removeChild(userView);
 
         // instantiate the form
         this.userTemplate = new Ractive({
@@ -20,12 +33,28 @@ class ViewController {
             data: this
         });
 
-        // we bind the form to the submit action
+        // bind the list view
+        var todolistView = document.getElementById("todolistView");
+        var todolistTemplateStr = todolistView.outerHTML;
+        var todolistParent = todolistView.parentNode;
+        todolistParent.removeChild(todolistView);
+        this.todolistTemplate = new Ractive({
+            el: todolistParent,
+            template: todolistTemplateStr,
+            data: this
+        });
+
+        // we bind the actions from the templates
         this.userTemplate.on("submitRegisterForm", (evt) => this.submitRegisterForm(evt));
         this.userTemplate.on("submitLoginForm", (evt) => this.submitLoginForm(evt));
         this.userTemplate.on("logoutUser", (evt) => this.logout());
 
+        this.todolistTemplate.on("submitTodoForm", (evt) => this.submitTodoForm(evt));
+        this.todolistTemplate.on("deleteTodo", (evt) => this.deleteTodo(evt));
+
     }
+
+    /* login and registration */
 
     submitRegisterForm(evt) {
         console.log("submitLoginForm()");
@@ -48,8 +77,10 @@ class ViewController {
                     this.event = null;
                     this.status = "loggedin";
                     this.userTemplate.set(this);
-                },2000);
-            }).catch(function(error) {
+                    localStorage.setItem("lastUseremail", this.user.email);
+                    this.showTodolist();
+                }, 2000);
+            }).catch(function (error) {
                 confirmPwdField.setCustomValidity("ERROR " + error.code + ": " + error.message);
                 confirmPwdField.reportValidity();
             });
@@ -64,8 +95,10 @@ class ViewController {
         evt.original.preventDefault();
         firebase.auth().signInWithEmailAndPassword(this.user.email, this.user.pwd).then(() => {
             this.status = "loggedin";
+            localStorage.setItem("lastUseremail", this.user.email);
             this.userTemplate.set(this);
-        }).catch(function(error) {
+            this.showTodolist();
+        }).catch(function (error) {
             pwdField.setCustomValidity("ERROR " + error.code + ": " + error.message);
             pwdField.reportValidity();
         });
@@ -77,11 +110,55 @@ class ViewController {
             this.status = "loggedout";
             this.register = false;
             this.userTemplate.set(this);
-        }).catch(function(error) {
+            document.getElementById("todolistView").hidden = true;
+        }).catch(function (error) {
             alert("ERROR " + error.code + " on logout(): " + error.message)
         });
     }
 
+    /* todo list */
+
+    showTodolist() {
+        console.log("showTodolist()");
+        document.getElementById("todolistView").hidden = false;
+        this.crudops.initialise();
+        this.crudops.readAll().then(alltodos => {
+            console.log("showTodolist(): todos are: ", alltodos);
+            this.todos = alltodos;
+            this.todolistTemplate.set(this);
+        });
+    }
+
+    submitTodoForm(evt) {
+        console.log("submitTodoForm(): ", this.newtodo);
+        evt.original.preventDefault();
+        this.createTodo(this.newtodo);
+    }
+
+    createTodo(todo) {
+        console.log("createTodo()");
+        this.crudops.create(todo).then(created => {
+            console.log("created: ", created);
+            this.todos.push(created);
+            this.newtodo = {};
+            this.todolistTemplate.set(this);
+        });
+    }
+
+    deleteTodo(evt) {
+        console.log("deleteTodo()");
+        var todoid = evt.original.target.parentNode.parentNode.getAttribute("data-todo-id");
+        console.log("will delete todo with id: " + todoid);
+        this.crudops.delete(todoid).then(() => {
+                this.todos = this.todos.filter(todo => todo.id != todoid);
+                this.todolistTemplate.set(this);
+            }
+        );
+    }
+
 }
 
-window.onload = () => {var vc = new ViewController(); vc.oncreate();};
+window.onload = () => {
+    var vc = new ViewController();
+    vc.oncreate();
+};

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>MAD Todos</title>
-    <link type="text/css" href="css/view.css"/>
+    <link rel="stylesheet" href="css/view.css"/>
+    <link rel="stylesheet" href="css/table.css"/>
     <!-- Firebase App is always required and must be first -->
     <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-app.js"></script>
 
@@ -24,37 +25,77 @@
     </script>
     <script src="js/lib/ractive.min.js"></script>
     <script src="js/controller.js"></script>
+    <script src="js/crud.js"></script>
 </head>
 <body>
-    <div id="userViewWrapper">
-        <div id="userView">
-            {{#if status == 'loggedout'}}
-            <form>
-                <input type="checkbox" name="accessmode" id="accessmodeSelect" checked="{{register}}"/>
-                <label for="accessmodeSelect">Neuer Nutzer?</label>
-                {{#if event == 'registrationSuccess'}}
-                <span>Nutzerkonto für {{user.email}} wurde erfolgreich erstellt!</span>
-                {{/if}}
-            </form>
-            {{#if register == true}}
-            <form id="registerForm" on-submit="submitRegisterForm">
-                <input required="required" type="email" placeholder="Email Adress" name="email" value="{{user.email}}"/>
-                <input required="required" type="password" placeholder="Password" name="pwd" value="{{user.pwd}}"/>
-                <input required="required" type="password" placeholder="Confirm Password" name="confirmPwd" value="{{user.confirmPwd}}"/>
-                <input type="submit" value="Registrieren"/>
-            </form>
-            {{else}}
-            <form id="loginForm" on-submit="submitLoginForm">
-                <input required="required" type="email" placeholder="Email Adress" name="email" value="{{user.email}}"/>
-                <input required="required" type="password" placeholder="Password" name="pwd" value="{{user.pwd}}"/>
-                <input type="submit" value="Login"/>
-            </form>
+<h2>MAD Todos</h2>
+<div id="userViewWrapper">
+    <div id="userView">
+        {{#if status == 'loggedout'}}
+        <form>
+            <input type="checkbox" name="accessmode" id="accessmodeSelect" checked="{{register}}"/>
+            <label for="accessmodeSelect">Neuer Nutzer?</label>
+            {{#if event == 'registrationSuccess'}}
+            <span>Nutzerkonto für {{user.email}} wurde erfolgreich erstellt!</span>
             {{/if}}
-            {{else}}
-            {{user.email}}
-            <button on-click="logoutUser">Logout</button>
-            {{/if}}
-        </div>
+        </form>
+        {{#if register == true}}
+        <form id="registerForm" on-submit="submitRegisterForm">
+            <input required="required" type="email" placeholder="Email Adress" name="email" value="{{user.email}}"/>
+            <input required="required" type="password" placeholder="Password" name="pwd" value="{{user.pwd}}"/>
+            <input required="required" type="password" placeholder="Confirm Password" name="confirmPwd"
+                   value="{{user.confirmPwd}}"/>
+            <input type="submit" value="Registrieren"/>
+        </form>
+        {{else}}
+        <form id="loginForm" on-submit="submitLoginForm">
+            <input required="required" type="email" placeholder="Email Adress" name="email" value="{{user.email}}"/>
+            <input required="required" type="password" placeholder="Password" name="pwd" value="{{user.pwd}}"/>
+            <input type="submit" value="Login"/>
+        </form>
+        {{/if}}
+        {{else}}
+        {{user.email}}
+        <button on-click="logoutUser">Logout</button>
+        {{/if}}
     </div>
+</div>
+<div id="todolistWrapper">
+    <div id="todolistView" hidden="hidden">
+        <div class="table">
+            <div class="th">
+                <span>Id</span>
+                <span>Name</span>
+                <span>Description</span>
+                <span>Expiry</span>
+                <span>Done</span>
+                <span>Favourite</span>
+                <span>Contacts</span>
+                <span>Location</span>
+                <span></span>
+            </div>
+            {{#each todos}}
+            <div class="tr" data-todo-id="{{id}}">
+                <span>{{id}}</span>
+                <span>{{name}}</span>
+                <span>{{description}}</span>
+                <span>{{expiry}}</span>
+                <span>{{done}}</span>
+                <span>{{favourite}}</span>
+                <span>{{contacts}}</span>
+                <span>{{location}}</span>
+                <span>
+                <button on-click="deleteTodo">delete</button>
+                </span>
+            </div>
+            {{/each}}
+        </div>
+        <form on-submit="submitTodoForm">
+            <input name="name" type="text" value="{{newtodo.name}}" placeholder="Name"/>
+            <input name="description" type="text" value="{{newtodo.description}}" placeholder="Beschreibung"/>
+            <input type="submit" value="Todo erstellen"/>
+        </form>
+    </div>
+</div>
 </body>
 </html>
