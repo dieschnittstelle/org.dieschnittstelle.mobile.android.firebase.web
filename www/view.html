@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MAD Todos</title>
+    <link type="text/css" href="css/view.css"/>
+    <!-- Firebase App is always required and must be first -->
+    <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-app.js"></script>
+
+    <!-- Add additional services that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.8.1/firebase-firestore.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyARYo-_iD8u7Pbr_MwzYuIyvjgHhBiaaaY",
+            authDomain: "dieschnittstelle-mad-todos.firebaseapp.com",
+            databaseURL: "https://dieschnittstelle-mad-todos.firebaseio.com",
+            projectId: "dieschnittstelle-mad-todos",
+            storageBucket: "dieschnittstelle-mad-todos.appspot.com",
+            messagingSenderId: "970546450942"
+        };
+        firebase.initializeApp(config);
+    </script>
+    <script src="js/lib/ractive.min.js"></script>
+    <script src="js/controller.js"></script>
+</head>
+<body>
+    <div id="userViewWrapper">
+        <div id="userView">
+            {{#if status == 'loggedout'}}
+            <form>
+                <input type="checkbox" name="accessmode" id="accessmodeSelect" checked="{{register}}"/>
+                <label for="accessmodeSelect">Neuer Nutzer?</label>
+                {{#if event == 'registrationSuccess'}}
+                <span>Nutzerkonto für {{user.email}} wurde erfolgreich erstellt!</span>
+                {{/if}}
+            </form>
+            {{#if register == true}}
+            <form id="registerForm" on-submit="submitRegisterForm">
+                <input required="required" type="email" placeholder="Email Adress" name="email" value="{{user.email}}"/>
+                <input required="required" type="password" placeholder="Password" name="pwd" value="{{user.pwd}}"/>
+                <input required="required" type="password" placeholder="Confirm Password" name="confirmPwd" value="{{user.confirmPwd}}"/>
+                <input type="submit" value="Registrieren"/>
+            </form>
+            {{else}}
+            <form id="loginForm" on-submit="submitLoginForm">
+                <input required="required" type="email" placeholder="Email Adress" name="email" value="{{user.email}}"/>
+                <input required="required" type="password" placeholder="Password" name="pwd" value="{{user.pwd}}"/>
+                <input type="submit" value="Login"/>
+            </form>
+            {{/if}}
+            {{else}}
+            {{user.email}}
+            <button on-click="logoutUser">Logout</button>
+            {{/if}}
+        </div>
+    </div>
+</body>
+</html>
